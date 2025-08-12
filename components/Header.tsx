@@ -53,6 +53,13 @@ const Header = () => {
                   </p>
                 </Link>
               </li>
+              <li className="">
+                <Link href="add">
+                  <p className="text-2xl lg:text-lg text-[#ADADAD] cursor-pointer transition-all hover:scale-125 ease-in-out delay-100 hover:bg-gradient-to-l hover:from-[#A100FF] hover:to-[#FE00AD] hover:bg-clip-text hover:text-transparent">
+                    Feedback
+                  </p>
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

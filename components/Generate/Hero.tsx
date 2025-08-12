@@ -4,15 +4,81 @@ import { Copy } from "lucide-react";
 import { useState } from "react";
 import copy from "copy-to-clipboard";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { model, pickupLineSchema } from "@/lib/gemini/geminiClient";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "@/utils/firebaseConfig";
 
 const Hero = () => {
-  const [text, setText] = useState(
+  const [generatedText, setGeneratedText] = useState(
     "Are you a parking ticket? Because you've got 'fine' written all over you."
   );
+  const [userInput, setUserInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const handleCopy = () => {
-    copy(text);
+    if (generatedText) copy(generatedText);
     alert("Clipboard Copied Successfully...");
   };
+
+  const handleGenerateClick = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const prompt = `Generate a single, creative, unique pickup line for the theme: "${
+        userInput || "general"
+      }". 
+    Make it different every time, no matter how similar the input is.
+    Include playful twists, wordplay, or unexpected humor. 
+    Current time: ${new Date().toISOString()}.
+    Respond in JSON with 'line' and 'category' fields.`;
+
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+
+        generationConfig: {
+          temperature: 1.3, // higher = more randomness
+          topP: 0.9,
+          topK: 40,
+          responseMimeType: "application/json",
+          responseSchema: pickupLineSchema,
+        },
+      });
+
+      console.log("Full Gemini result:", JSON.stringify(result, null, 2));
+
+      const part = result.response.candidates?.[0]?.content?.parts?.[0];
+      let parsedResponse: any = null;
+
+      if (part?.functionCall?.args) {
+        parsedResponse = part.functionCall.args;
+      } else if (part?.text) {
+        try {
+          parsedResponse = JSON.parse(part.text);
+        } catch (e) {
+          console.error("Error parsing part.text:", e);
+        }
+      }
+
+      console.log("Parsed response object:", parsedResponse);
+
+      if (parsedResponse?.line) {
+        setGeneratedText(parsedResponse.line);
+        const docRef = await addDoc(collection(db, "responses"), {
+          prompt: userInput,
+          pickupline: generatedText,
+        });
+      } else {
+        setGeneratedText("Failed to generate. Try a different input!");
+      }
+    } catch (err: any) {
+      console.error("Error generating content:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="flex items-center justify-center min-h-[80dvh]">
       <div className="relative px-[10px] flex flex-col gap-[1.5rem] lg:gap-[1rem]">
@@ -43,13 +109,18 @@ const Hero = () => {
         <div className="flex flex-col lg:flex-row justify-center gap-[1.5rem] items-center py-[1rem]">
           <div className="bg-gradient-to-r from-[#AA00FF] to-[#FF4A9E] rounded-full w-fit p-[2px]">
             <input
+              onChange={(e) => setUserInput(e.target.value)}
+              value={userInput}
               type="text"
               className="outline-none px-6 py-3 w-full text-white bg-[#10011C] rounded-full"
               placeholder="Type your vibe or keyboard..."
               required
             />
           </div>
-          <button className="cursor-pointer hover:scale-105 transition-transform delay-150 ease-in flex items-center bg-gradient-to-r from-[#AA00FF] to-[#FF4A9E] px-[1.5rem] text-xl font-medium font-poppins py-3 rounded-full gap-[0.5rem]">
+          <button
+            onClick={handleGenerateClick}
+            className="cursor-pointer hover:scale-105 transition-transform delay-150 ease-in flex items-center bg-gradient-to-r from-[#AA00FF] to-[#FF4A9E] px-[1.5rem] text-xl font-medium font-poppins py-3 rounded-full gap-[0.5rem]"
+          >
             <Sparkles />
             <span>Generate</span>
           </button>
@@ -62,7 +133,7 @@ const Hero = () => {
               className="absolute right-2 top-2 text-pink-500/80 cursor-pointer"
             />
             <p className="text-center text-lg pt-4">
-              <q>{text}</q>
+              <q>{generatedText}</q>
             </p>
           </div>
         </div>

@@ -152,10 +152,11 @@ const Hero = () => {
         </div>
       </div>
 
-      <div className="pt-[2rem] ">
+      <div className="pt-[2rem] flex flex-col gap-3">
         <p className="text-center text-gray-400 text-sm">
           © 2025 RizzBerry Inc. All right reversed
         </p>
+        <p className="font-poppins text-gray-400 text-center text-xs ">Created with ❤️ by <a className="underline text-purple-400" href="https://www.nithwin.xyz/">Nithwin</a></p>
       </div>
     </section>
   );
