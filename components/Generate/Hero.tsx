@@ -10,7 +10,7 @@ import { db } from "@/utils/firebaseConfig";
 
 const Hero = () => {
   const [generatedText, setGeneratedText] = useState(
-    "Are you a parking ticket? Because you've got 'fine' written all over you."
+    "All the good pick up lines are taken but you aren't."
   );
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
