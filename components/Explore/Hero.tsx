@@ -3,7 +3,6 @@ import { db } from "@/utils/firebaseConfig";
 import { Alert, IconButton } from "@mui/material";
 import copy from "copy-to-clipboard";
 import { collection, getDocs } from "firebase/firestore";
-import { div, p } from "framer-motion/client";
 import { Copy, Heart, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
