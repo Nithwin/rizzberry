@@ -46,5 +46,5 @@ Check out the live app here: [https://rizzberry.vercel.app](https://rizzberry.ve
 1. Clone the repo:
 
 ```bash
-git clone https://github.com/your-username/rizzberry.git
+git clone https://github.com/Nithwin/rizzberry.git
 cd rizzberry
