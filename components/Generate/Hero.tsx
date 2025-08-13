@@ -1,7 +1,8 @@
 "use client";
+
 import { Sparkles } from "lucide-react";
 import { Copy } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import copy from "copy-to-clipboard";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { model, pickupLineSchema } from "@/lib/gemini/geminiClient";
@@ -14,11 +15,22 @@ const Hero = () => {
   );
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const [animateText, setAnimateText] = useState(false);
+  useEffect(() => {
+    setAnimateText(true);
+    const timeout = setTimeout(() => {
+      setAnimateText(false);
+    }, 700);
+    return () => clearTimeout(timeout);
+  }, [generatedText]);
 
   const handleCopy = () => {
-    if (generatedText) copy(generatedText);
-    alert("Clipboard Copied Successfully...");
+    if (generatedText) {
+      copy(generatedText);
+      alert("Clipboard Copied Successfully...");
+    }
   };
 
   const handleGenerateClick = async () => {
@@ -28,16 +40,15 @@ const Hero = () => {
       const prompt = `Generate a single, creative, unique pickup line for the theme: "${
         userInput || "general"
       }". 
-    Make it different every time, no matter how similar the input is.
-    Include playful twists, wordplay, or unexpected humor. 
-    Current time: ${new Date().toISOString()}.
-    Respond in JSON with 'line' and 'category' fields.`;
+Make it different every time, no matter how similar the input is.
+Include playful twists, wordplay, or unexpected humor. 
+Current time: ${new Date().toISOString()}.
+Respond in JSON with 'line' and 'category' fields.`;
 
       const result = await model.generateContent({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
-
         generationConfig: {
-          temperature: 1.3, // higher = more randomness
+          temperature: 1.3,
           topP: 0.9,
           topK: 40,
           responseMimeType: "application/json",
@@ -64,16 +75,19 @@ const Hero = () => {
 
       if (parsedResponse?.line) {
         setGeneratedText(parsedResponse.line);
-        const docRef = await addDoc(collection(db, "responses"), {
+
+        // Write to Firestore using the new line directly
+        await addDoc(collection(db, "responses"), {
           prompt: userInput,
-          pickupline: generatedText,
+          pickupline: parsedResponse.line,
+          timestamp: new Date(),
         });
       } else {
         setGeneratedText("Failed to generate. Try a different input!");
       }
     } catch (err: any) {
       console.error("Error generating content:", err);
-      setError(err);
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -95,13 +109,14 @@ const Hero = () => {
         </div>
         <div className="size-25 lg:w-full lg:size-15 rounded-full bg-[#8800FF]/30 blur-3xl absolute top-[2rem] left-[4rem] lg:left-0 mix-blend-plus-lighter"></div>
         <div className="size-25 lg:w-full lg:size-15 rounded-full bg-[#8800FF]/30 blur-3xl absolute top-[12rem] left-[4rem] lg:left-0 mix-blend-plus-lighter"></div>
+
         <div className="flex flex-col gap-[1.7rem] ">
           <p className="text-4xl lg:text-6xl text-center max-w-[40rem] mx-auto font-bold bg-gradient-to-r from-[#AA00FF] to-[#FF4A9E] text-transparent bg-clip-text font-poppins">
             Unleash Your Inner Charmer
           </p>
 
           <p className="text-sm lg:text-lg max-w-[40rem] text-center px-3 text-gray-400">
-            Tired of lame pick-up lines? Our AI crats witty, charming, and
+            Tired of lame pick-up lines? Our AI crafts witty, charming, and
             irresistible openers that actually work.
           </p>
         </div>
@@ -115,16 +130,27 @@ const Hero = () => {
               className="outline-none px-6 py-3 w-full text-white bg-[#10011C] rounded-full"
               placeholder="Type your vibe or keyboard..."
               required
+              disabled={loading}
             />
           </div>
           <button
             onClick={handleGenerateClick}
-            className="cursor-pointer hover:scale-105 transition-transform delay-150 ease-in flex items-center bg-gradient-to-r from-[#AA00FF] to-[#FF4A9E] px-[1.5rem] text-xl font-medium font-poppins py-3 rounded-full gap-[0.5rem]"
+            disabled={loading}
+            className={`cursor-pointer flex items-center px-[1.5rem] text-xl font-medium font-poppins py-3 rounded-full gap-[0.5rem] transition-transform delay-150 ease-in
+              ${
+                loading
+                  ? "bg-gray-600 cursor-not-allowed"
+                  : "bg-gradient-to-r from-[#AA00FF] to-[#FF4A9E] hover:scale-105"
+              }`}
           >
             <Sparkles />
-            <span>Generate</span>
+            <span>{loading ? "Generating..." : "Generate"}</span>
           </button>
         </div>
+
+        {error && (
+          <p className="text-center text-red-500 font-semibold">{error}</p>
+        )}
 
         <div>
           <div className="px-[1rem] relative py-[1rem] border-2 border-purple-700 rounded-2xl bg-purple-950/25 backdrop-blur-3xl">
@@ -132,9 +158,13 @@ const Hero = () => {
               onClick={handleCopy}
               className="absolute right-2 top-2 text-pink-500/80 cursor-pointer"
             />
-            <p className="text-center text-lg pt-4">
-              <q>{generatedText}</q>
-            </p>
+            <p
+        className={`text-center text-lg pt-4 transition-opacity duration-700 ${
+          animateText ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        <q>{generatedText}</q>
+      </p>
           </div>
         </div>
       </div>

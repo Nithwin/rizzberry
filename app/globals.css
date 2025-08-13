@@ -29,17 +29,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-
-
-
-.jh{
-  color: #ce9101;
+.fade {
+  transition: opacity 0.8s ease-in-out;
 }
-/* <video
-              src="Fire.webm" // Place your file in /public/videos/
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-auto rounded-lg"
-            /> */
+
+.fade-out {
+  opacity: 0;
+}
+
+.fade-in {
+  opacity: 1;
+}
+

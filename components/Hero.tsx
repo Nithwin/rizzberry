@@ -142,13 +142,13 @@ const Hero = () => {
           <Link href={"generate"} className="z-50 flex justify-center items-center cursor-pointer hover:scale-110 transition-transform ease-in delay-100 bg-gradient-to-l from-[60%] from-[#A100FF] to-[#FE00AD] px-[1.5rem] py-2 span rounded-full font-semibold text-xl">
             <span>Get Started</span>
           </Link>
-          <button className="z-50 hover:scale-110  cursor-pointer transition-transform ease-in delay-100 bg-gradient-to-l from-60% from-[#A100FF] to-[#FE00AD] p-0.5 flex rounded-full font-semibold text-xl">
+          <Link href={"/explore"} className="z-50 hover:scale-110  cursor-pointer transition-transform ease-in delay-100 bg-gradient-to-l from-60% from-[#A100FF] to-[#FE00AD] p-0.5 flex rounded-full font-semibold text-xl">
             <p className="px-[1.5rem] py-1.5 bg-[#10011C] backdrop-blur-3xl rounded-full">
               <span className="bg-gradient-to-l text-transparent bg-clip-text from-60% to-100% from-[#A100FF] to-[#FE00AD]">
                 Explore Lines
               </span>
             </p>
-          </button>
+          </Link>
         </div>
       </div>
 
