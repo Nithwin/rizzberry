@@ -1,4 +1,4 @@
-# Rizzberry
+# RizzBerry
 
 ![Rizzberry Screenshot](https://github.com/user-attachments/assets/e0dd3b5a-6ddc-4bc7-86f7-372a0ffbecb4)
 
